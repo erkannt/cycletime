@@ -85,7 +85,7 @@ func printCycleTimes(path string, authorExclude regexp.Regexp) {
 
 func main() {
 
-	excludeFlag := flag.String("exclude", "", "Exclude commits with authors that match this regex")
+	excludeFlag := flag.String("exclude", "^$", "Exclude commits with authors that match this regex")
 
 	flag.Usage = func() {
 		fmt.Print("Usage: cycletime [--exclude=AUTHOR_REGEX] [PATH]\n\n")
