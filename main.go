@@ -20,7 +20,7 @@ type Cycle struct {
 	duration time.Duration
 }
 
-func printCycleTimes(path string) {
+func printCycleTimes(path string, authorExclude regexp.Regexp) {
 	repo, err := git.PlainOpen(path)
 	if err != nil {
 		fmt.Printf("Not a git repo: %s\n", path)
@@ -40,6 +40,10 @@ func printCycleTimes(path string) {
 	commits.ForEach(func(c *object.Commit) error {
 		issue := issueRegex.Find([]byte(c.Message))
 		if issue == nil {
+			return nil
+		}
+
+		if authorExclude.Match([]byte(c.Author.Name)) {
 			return nil
 		}
 
@@ -81,21 +85,33 @@ func printCycleTimes(path string) {
 
 func main() {
 
+	excludeFlag := flag.String("exclude", "", "Exclude commits with authors that match this regex")
+
 	flag.Usage = func() {
 		fmt.Print("Usage: cycletime PATH\n\n")
+		fmt.Print("Hours between first and last commit tagged with an issue number\n\n")
 		fmt.Println("Flags:")
 		flag.PrintDefaults()
 	}
 
 	flag.Parse()
 
+	authorExcludeRegex, err := regexp.Compile(*excludeFlag)
+
+	if err != nil {
+		fmt.Println("Invalid regex")
+		fmt.Println(err)
+		flag.Usage()
+		os.Exit(1)
+	}
+
 	if len(flag.Args()) != 1 {
 		fmt.Println("Missing PATH")
 		flag.Usage()
 		os.Exit(1)
 	}
-	path := os.Args[1]
+	path := flag.Arg(0)
 
-	printCycleTimes(path)
+	printCycleTimes(path, *authorExcludeRegex)
 
 }
