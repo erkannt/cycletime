@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"math"
 	"os"
@@ -80,9 +81,17 @@ func printCycleTimes(path string) {
 
 func main() {
 
-	if len(os.Args) != 2 {
-		fmt.Println("No PATH provided")
-		fmt.Println("cycletime PATH")
+	flag.Usage = func() {
+		fmt.Print("Usage: cycletime PATH\n\n")
+		fmt.Println("Flags:")
+		flag.PrintDefaults()
+	}
+
+	flag.Parse()
+
+	if len(flag.Args()) != 1 {
+		fmt.Println("Missing PATH")
+		flag.Usage()
 		os.Exit(1)
 	}
 	path := os.Args[1]
