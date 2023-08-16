@@ -2,15 +2,18 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"regexp"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-type cycle struct {
+type Cycle struct {
 	issue    string
 	end      time.Time
 	duration time.Duration
@@ -37,7 +40,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	cycles := make(map[string]cycle)
+	cycles := make(map[string]Cycle)
 
 	issueRegex, _ := regexp.Compile("#([0-9]+)")
 
@@ -55,16 +58,31 @@ func main() {
 			end = c.Committer.When
 		}
 
-		cycles[string(issue)] = cycle{
+		cycles[string(issue)] = Cycle{
 			issue:    string(issue),
 			end:      end,
 			duration: end.Sub(c.Committer.When),
 		}
 
-		newCycle := cycles[string(issue)]
-		fmt.Printf("%s %.0fh\n", newCycle.issue, newCycle.duration.Hours())
-
 		return nil
 	})
+
+	result := make([]Cycle, 0, len(cycles))
+
+	for _, value := range cycles {
+		result = append(result, value)
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].end.Before(result[j].end)
+	})
+
+	for _, cycle := range result {
+		visualRepresentation := strings.Repeat("·", int(math.Ceil(cycle.duration.Hours()/8)))
+		if len(visualRepresentation) > 50 {
+			visualRepresentation = strings.Repeat("·", 48) + ">>"
+		}
+		fmt.Printf("%s %s %8.1f %s\n", cycle.end.Format(time.DateOnly), cycle.issue, cycle.duration.Hours(), visualRepresentation)
+	}
 
 }
