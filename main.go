@@ -19,15 +19,7 @@ type Cycle struct {
 	duration time.Duration
 }
 
-func main() {
-
-	if len(os.Args) != 2 {
-		fmt.Println("No PATH provided")
-		fmt.Println("cycletime PATH")
-		os.Exit(1)
-	}
-	path := os.Args[1]
-
+func printCycleTimes(path string) {
 	repo, err := git.PlainOpen(path)
 	if err != nil {
 		fmt.Printf("Not a git repo: %s\n", path)
@@ -84,5 +76,17 @@ func main() {
 		}
 		fmt.Printf("%s %s %8.1f %s\n", cycle.end.Format(time.DateOnly), cycle.issue, cycle.duration.Hours(), visualRepresentation)
 	}
+}
+
+func main() {
+
+	if len(os.Args) != 2 {
+		fmt.Println("No PATH provided")
+		fmt.Println("cycletime PATH")
+		os.Exit(1)
+	}
+	path := os.Args[1]
+
+	printCycleTimes(path)
 
 }
