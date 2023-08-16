@@ -8,20 +8,19 @@ import (
 )
 
 func main() {
-	path, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Failed to get current working directory")
+
+	if len(os.Args) != 2 {
+		fmt.Println("No PATH provided")
+		fmt.Println("cycletime PATH")
 		os.Exit(1)
 	}
+	path := os.Args[1]
 
 	repo, err := git.PlainOpen(path)
 	if err != nil {
-		fmt.Println("Could not read git repo in current working directory")
-		fmt.Println(err)
+		fmt.Printf("Not a git repo: %s\n", path)
 		os.Exit(1)
 	}
 
 	repo.Log(&git.LogOptions{})
-
-	fmt.Println(path)
 }
