@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"gopkg.in/src-d/go-git.v4"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 func main() {
@@ -22,5 +23,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	repo.Log(&git.LogOptions{})
+	commits, err := repo.Log(&git.LogOptions{})
+	if err != nil {
+		fmt.Printf("Failed to load git log:\n%s\n", err)
+	}
+
+	var cCount int
+	commits.ForEach(func(c *object.Commit) error {
+		cCount++
+		return nil
+	})
+
+	fmt.Println("Commit count:", cCount)
 }
