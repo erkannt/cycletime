@@ -88,10 +88,9 @@ func main() {
 	excludeFlag := flag.String("exclude", "", "Exclude commits with authors that match this regex")
 
 	flag.Usage = func() {
-		fmt.Print("Usage: cycletime PATH\n\n")
+		fmt.Print("Usage: cycletime [--exclude=AUTHOR_REGEX] [PATH]\n\n")
 		fmt.Print("Hours between first and last commit tagged with an issue number\n\n")
-		fmt.Println("Flags:")
-		flag.PrintDefaults()
+		fmt.Print("PATH defaults to the current working directory\n")
 	}
 
 	flag.Parse()
@@ -105,13 +104,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(flag.Args()) != 1 {
-		fmt.Println("Missing PATH")
-		flag.Usage()
-		os.Exit(1)
-	}
 	path := flag.Arg(0)
 
-	printCycleTimes(path, *authorExcludeRegex)
+	if path == "" {
+		path, err = os.Getwd()
+		if err != nil {
+			fmt.Println("Can't get current working directory")
+			os.Exit(1)
+		}
+	}
 
+	printCycleTimes(path, *authorExcludeRegex)
 }
