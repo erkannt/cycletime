@@ -20,7 +20,7 @@ type Cycle struct {
 	duration time.Duration
 }
 
-func printCycleTimes(path string, authorExclude regexp.Regexp) {
+func printCycleTimes(path string, authorExclude regexp.Regexp, days int) {
 	repo, err := git.PlainOpen(path)
 	if err != nil {
 		fmt.Printf("Not a git repo: %s\n", path)
@@ -45,6 +45,15 @@ func printCycleTimes(path string, authorExclude regexp.Regexp) {
 
 		if authorExclude.Match([]byte(c.Author.Name)) {
 			return nil
+		}
+
+		if days > 0 {
+			timeOfCommit := c.Author.When
+			deltaDuration := time.Duration(days) * 24 * time.Hour
+			earliestOfInterest := time.Now().Add(-deltaDuration)
+			if timeOfCommit.Before(earliestOfInterest) {
+				return nil
+			}
 		}
 
 		existingCycle, cycleKnown := cycles[string(issue)]
@@ -86,9 +95,10 @@ func printCycleTimes(path string, authorExclude regexp.Regexp) {
 func main() {
 
 	excludeFlag := flag.String("exclude", "^$", "Exclude commits with authors that match this regex")
+	daysFlag := flag.Int("days", -1, "How many days to look back")
 
 	flag.Usage = func() {
-		fmt.Print("Usage: cycletime [--exclude=AUTHOR_REGEX] [PATH]\n\n")
+		fmt.Print("Usage: cycletime [--exclude=AUTHOR_REGEX] [--days=DAYS_TO_LOOK_BACK] [PATH]\n\n")
 		fmt.Print("Hours between first and last commit tagged with an issue number\n\n")
 		fmt.Print("PATH defaults to the current working directory\n")
 	}
@@ -114,5 +124,5 @@ func main() {
 		}
 	}
 
-	printCycleTimes(path, *authorExcludeRegex)
+	printCycleTimes(path, *authorExcludeRegex, *daysFlag)
 }
