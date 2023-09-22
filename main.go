@@ -95,12 +95,13 @@ func printCycleTimes(path string, authorExclude regexp.Regexp, days int) {
 func main() {
 
 	excludeFlag := flag.String("exclude", "^$", "Exclude commits with authors that match this regex")
-	daysFlag := flag.Int("days", -1, "How many days to look back")
+	daysFlag := flag.Int("days", -1, "How many days to look back, -1 being infinity")
 
 	flag.Usage = func() {
 		fmt.Print("Usage: cycletime [--exclude=AUTHOR_REGEX] [--days=DAYS_TO_LOOK_BACK] [PATH]\n\n")
 		fmt.Print("Hours between first and last commit tagged with an issue number\n\n")
-		fmt.Print("PATH defaults to the current working directory\n")
+		fmt.Print("PATH defaults to the current working directory\n\n")
+		flag.PrintDefaults()
 	}
 
 	flag.Parse()
