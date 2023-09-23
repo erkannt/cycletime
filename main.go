@@ -128,7 +128,7 @@ func main() {
 	githubFlag := flag.Bool("gh", false, "Use gh cli to obtain issue titles")
 
 	flag.Usage = func() {
-		fmt.Print("Usage: cycletime [--exclude=AUTHOR_REGEX] [--days=DAYS_TO_LOOK_BACK] [PATH]\n\n")
+		fmt.Print("Usage: cycletime [flags] [PATH]\n\n")
 		fmt.Print("Hours between first and last commit tagged with an issue number\n\n")
 		fmt.Print("PATH defaults to the current working directory\n\n")
 		flag.PrintDefaults()

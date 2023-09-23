@@ -56,7 +56,7 @@ $ cycletime --exclude=bot --days 14 -gh
 ## Usage
 ```
 $ cycletime -h
-Usage: cycletime [--exclude=AUTHOR_REGEX] [--days=DAYS_TO_LOOK_BACK] [PATH]
+Usage: cycletime [flags] [PATH]
 
 Hours between first and last commit tagged with an issue number
 
