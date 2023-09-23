@@ -73,5 +73,5 @@ PATH defaults to the current working directory
 ## Install
 
 Two options:
-  - clone the repo and `go install`
+  - `go install github.com/erkannt/cycletime@1.0.0`
   - download prebuilt binaries from [releases page](https://github.com/erkannt/cycletime/releases)
