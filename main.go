@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"math"
 	"os"
+	"os/exec"
 	"regexp"
 	"sort"
 	"strings"
@@ -20,7 +22,7 @@ type Cycle struct {
 	duration time.Duration
 }
 
-func printCycleTimes(path string, authorExclude regexp.Regexp, days int) {
+func printCycleTimes(path string, authorExclude regexp.Regexp, days int, github bool) {
 	repo, err := git.PlainOpen(path)
 	if err != nil {
 		fmt.Printf("Not a git repo: %s\n", path)
@@ -88,14 +90,42 @@ func printCycleTimes(path string, authorExclude regexp.Regexp, days int) {
 		if len(visualRepresentation) > 50 {
 			visualRepresentation = strings.Repeat("·", 48) + ">>"
 		}
-		fmt.Printf("%s %s %8.1f %s\n", cycle.end.Format(time.DateOnly), cycle.issue, cycle.duration.Hours(), visualRepresentation)
+		issue := cycle.issue[1:]
+
+		if github {
+			ghCmd := exec.Command("gh")
+
+			ghCmd.Dir = path
+			var outb, errb bytes.Buffer
+			ghCmd.Stdout = &outb
+			ghCmd.Stderr = &errb
+
+			ghCmd.Args = []string{"gh", "issue", "view", "--json", "title", "-t", "{{.title}}", issue}
+
+			err := ghCmd.Run()
+
+			if err != nil {
+				fmt.Println(err)
+				fmt.Println(errb.String())
+			} else {
+				title := outb.String()
+				if len(title) > 60 {
+					title = fmt.Sprintf("%s...", title[:53])
+				}
+				issue = fmt.Sprintf("%-60s #%s", title, issue)
+			}
+		} else {
+			issue = fmt.Sprintf("#%s", issue)
+		}
+
+		fmt.Printf("%s %s\t%8.1f %s\n", cycle.end.Format(time.DateOnly), issue, cycle.duration.Hours(), visualRepresentation)
 	}
 }
 
 func main() {
-
 	excludeFlag := flag.String("exclude", "^$", "Exclude commits with authors that match this regex")
 	daysFlag := flag.Int("days", -1, "How many days to look back, -1 being infinity")
+	githubFlag := flag.Bool("gh", false, "Use gh cli to obtain issue titles")
 
 	flag.Usage = func() {
 		fmt.Print("Usage: cycletime [--exclude=AUTHOR_REGEX] [--days=DAYS_TO_LOOK_BACK] [PATH]\n\n")
@@ -125,5 +155,5 @@ func main() {
 		}
 	}
 
-	printCycleTimes(path, *authorExcludeRegex, *daysFlag)
+	printCycleTimes(path, *authorExcludeRegex, *daysFlag, *githubFlag)
 }
